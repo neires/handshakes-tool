@@ -124,6 +124,23 @@ Select one type what you want to handshake
 EOF
 }
 
+#xian shi sao miao jie guo function
+display_result_info() {
+IFS=$'\n'
+a=1
+for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$")
+do
+	temp_mac=$(echo ${i}|awk -F "," '{print $1}')
+	cat ${work_dir}/dump-01.csv|sed -e:b -e '$!{N;1,80000bb' -e\} -e '/\n.*Station MAC/!P;D'|egrep --text -v "Station MAC"|egrep --text -v "^$"|grep --text ${temp_mac} >/dev/null 2>&1
+	client_stat=$?
+	if [ "${client_stat}" == "0" ]; then
+		echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
+	else
+		echo -e "\033[33m[$a]\033[0m $i"
+	fi
+	let a++
+done
+}
 
 #handshake 2.4g and 5g function
 handshake_bga() {
@@ -144,20 +161,7 @@ done
 
 #xian shi sao  miao  jie  guo
 dos2unix ${work_dir}/dump-01.csv
-IFS=$'\n'
-a=1
-for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$")
-do
-	temp_mac=$(echo ${i}|awk -F "," '{print $1}')
-	cat ${work_dir}/dump-01.csv|sed -e:b -e '$!{N;1,80000bb' -e\} -e '/\n.*Station MAC/!P;D'|egrep --text -v "Station MAC"|egrep --text -v "^$"|grep --text ${temp_mac} >/dev/null 2>&1
-	client_stat=$?
-	if [ "${client_stat}" == "0" ]; then
-		echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
-	else
-		echo -e "\033[33m[$a]\033[0m $i"
-	fi
-	let a++
-done
+display_result_info
 
 #xuan zhe yi  ge  xin hao
 read -p "Select one AP what you want to handshake [num]: " ap_num
@@ -165,74 +169,22 @@ while true
 do
 	if [ -z ${ap_num} ]; then
 		clear
-		IFS=$'\n'
-		a=1
-		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$")
-		do
-			temp_mac=$(echo ${i}|awk -F "," '{print $1}')
-			cat ${work_dir}/dump-01.csv|sed -e:b -e '$!{N;1,80000bb' -e\} -e '/\n.*Station MAC/!P;D'|egrep --text -v "Station MAC"|egrep --text -v "^$"|grep --text ${temp_mac} >/dev/null 2>&1
-			client_stat=$?
-			if [ "${client_stat}" == "0" ]; then
-				echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
-			else
-				echo -e "\033[33m[$a]\033[0m $i"
-			fi
-			let a++
-		done
+		display_result_info
 		echo -e "\033[33mAP_num must be a number and can not be null!!\033[0m"
 		read -p "Select one AP what you want to handshake [num]: " ap_num
 	elif [[ ! ${ap_num} =~ ^[0-9]+$ ]]; then
 		clear
-		IFS=$'\n'
-		a=1
-		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$")
-		do
-			temp_mac=$(echo ${i}|awk -F "," '{print $1}')
-			cat ${work_dir}/dump-01.csv|sed -e:b -e '$!{N;1,80000bb' -e\} -e '/\n.*Station MAC/!P;D'|egrep --text -v "Station MAC"|egrep --text -v "^$"|grep --text ${temp_mac} >/dev/null 2>&1
-			client_stat=$?
-			if [ "${client_stat}" == "0" ]; then
-				echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
-			else
-				echo -e "\033[33m[$a]\033[0m $i"
-			fi
-			let a++
-		done
+		display_result_info
 		echo -e "\033[33mAP_num must be a number and can not be null!!\033[0m"
 		read -p "Select one AP what you want to handshake [num]: " ap_num
 	elif [ ${ap_num} -gt $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$"|wc -l) ]; then
 		clear
-		IFS=$'\n'
-		a=1
-		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$")
-		do
-			temp_mac=$(echo ${i}|awk -F "," '{print $1}')
-			cat ${work_dir}/dump-01.csv|sed -e:b -e '$!{N;1,80000bb' -e\} -e '/\n.*Station MAC/!P;D'|egrep --text -v "Station MAC"|egrep --text -v "^$"|grep --text ${temp_mac} >/dev/null 2>&1
-			client_stat=$?
-			if [ "${client_stat}" == "0" ]; then
-				echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
-			else
-				echo -e "\033[33m[$a]\033[0m $i"
-			fi
-			let a++
-		done
+		display_result_info
 		echo -e "\033[33mAP_num con't be great of total number for ap list!!\033[0m"
 		read -p "Select one AP what you want to handshake [num]: " ap_num
 	elif [ ${ap_num} -eq 0 ]; then
 		clear
-		IFS=$'\n'
-		a=1
-		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$")
-		do
-			temp_mac=$(echo ${i}|awk -F "," '{print $1}')
-			cat ${work_dir}/dump-01.csv|sed -e:b -e '$!{N;1,80000bb' -e\} -e '/\n.*Station MAC/!P;D'|egrep --text -v "Station MAC"|egrep --text -v "^$"|grep --text ${temp_mac} >/dev/null 2>&1
-			client_stat=$?
-			if [ "${client_stat}" == "0" ]; then
-				echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
-			else
-				echo -e "\033[33m[$a]\033[0m $i"
-			fi
-			let a++
-		done
+		display_result_info
 		echo -e "\033[33mAP_num is must be great of 0!!\033[0m"
 		read -p "Select one AP what you want to handshake [num]: " ap_num
 	else
