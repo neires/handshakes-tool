@@ -1,4 +1,14 @@
 #!/bin/bash
+#
+#********************************************************************
+#Author:                QianSong
+#QQ:                    1725099638
+#Date:                  2022-09-13
+#FileName：             handshakes.sh
+#URL:                   https://github.com/QianSong1
+#Description：          The handshake wifi cap info script
+#Copyright (C):         QianSong 2022 All rights reserved
+#********************************************************************
 
 #ding yi var
 wlan_card=$1
