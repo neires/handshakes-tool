@@ -146,9 +146,16 @@ done
 dos2unix ${work_dir}/dump-01.csv
 IFS=$'\n'
 a=1
-for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$")
+for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$")
 do
-	echo -e "\033[33m[$a]\033[0m $i"
+	temp_mac=$(echo ${i}|awk -F "," '{print $1}')
+	cat ${work_dir}/dump-01.csv|sed -e:b -e '$!{N;1,80000bb' -e\} -e '/\n.*Station MAC/!P;D'|egrep --text -v "Station MAC"|egrep --text -v "^$"|grep --text ${temp_mac} >/dev/null 2>&1
+	client_stat=$?
+	if [ "${client_stat}" == "0" ]; then
+		echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
+	else
+		echo -e "\033[33m[$a]\033[0m $i"
+	fi
 	let a++
 done
 
@@ -160,9 +167,16 @@ do
 		clear
 		IFS=$'\n'
 		a=1
-		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$")
+		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$")
 		do
-			echo -e "\033[33m[$a]\033[0m $i"
+			temp_mac=$(echo ${i}|awk -F "," '{print $1}')
+			cat ${work_dir}/dump-01.csv|sed -e:b -e '$!{N;1,80000bb' -e\} -e '/\n.*Station MAC/!P;D'|egrep --text -v "Station MAC"|egrep --text -v "^$"|grep --text ${temp_mac} >/dev/null 2>&1
+			client_stat=$?
+			if [ "${client_stat}" == "0" ]; then
+				echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
+			else
+				echo -e "\033[33m[$a]\033[0m $i"
+			fi
 			let a++
 		done
 		echo -e "\033[33mAP_num must be a number and can not be null!!\033[0m"
@@ -171,9 +185,16 @@ do
 		clear
 		IFS=$'\n'
 		a=1
-		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$")
+		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$")
 		do
-			echo -e "\033[33m[$a]\033[0m $i"
+			temp_mac=$(echo ${i}|awk -F "," '{print $1}')
+			cat ${work_dir}/dump-01.csv|sed -e:b -e '$!{N;1,80000bb' -e\} -e '/\n.*Station MAC/!P;D'|egrep --text -v "Station MAC"|egrep --text -v "^$"|grep --text ${temp_mac} >/dev/null 2>&1
+			client_stat=$?
+			if [ "${client_stat}" == "0" ]; then
+				echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
+			else
+				echo -e "\033[33m[$a]\033[0m $i"
+			fi
 			let a++
 		done
 		echo -e "\033[33mAP_num must be a number and can not be null!!\033[0m"
@@ -182,9 +203,16 @@ do
 		clear
 		IFS=$'\n'
 		a=1
-		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$")
+		for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$")
 		do
-			echo -e "\033[33m[$a]\033[0m $i"
+			temp_mac=$(echo ${i}|awk -F "," '{print $1}')
+			cat ${work_dir}/dump-01.csv|sed -e:b -e '$!{N;1,80000bb' -e\} -e '/\n.*Station MAC/!P;D'|egrep --text -v "Station MAC"|egrep --text -v "^$"|grep --text ${temp_mac} >/dev/null 2>&1
+			client_stat=$?
+			if [ "${client_stat}" == "0" ]; then
+				echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
+			else
+				echo -e "\033[33m[$a]\033[0m $i"
+			fi
 			let a++
 		done
 		echo -e "\033[33mAP_num is great of total number for ap list!!\033[0m"
@@ -195,7 +223,7 @@ do
 done
 
 #ding yi mu biao  AP mac and xin dao
-target_mac=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$"|awk -F "," "NR==${ap_num}"'{print $1}')
+target_mac=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$"|awk -F "," "NR==${ap_num}"'{print $1}')
 target_ap_name=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|grep --text "${target_mac}"|awk -F "," '{print $(NF-1)}'|cut -c 2-)
 cur_channel=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|grep --text "${target_mac}"|awk '{print $6}'|awk -F "," '{print $1}'|egrep -v "^0$"|egrep -v "-"|egrep -v "[0-9]+e"|sort|uniq -c|sort -nk 1|tail -n 1|awk "NR==1"'{print $2}')
 if [ -z ${target_mac} ] || [ "${target_mac}" == "" ]; then
