@@ -177,7 +177,7 @@ do
 		display_result_info
 		echo -e "\033[33mAP_num must be a number and can not be null!!\033[0m"
 		read -p "Select one AP what you want to handshake [num]: " ap_num
-	elif [ ${ap_num} -gt $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep -v "Station MAC"|egrep -v "SSID,"|egrep -v "^$"|wc -l) ]; then
+	elif [ ${ap_num} -gt $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$"|wc -l) ]; then
 		clear
 		display_result_info
 		echo -e "\033[33mAP_num con't be great of total number for ap list!!\033[0m"
