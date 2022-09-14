@@ -198,7 +198,7 @@ if [ -z ${target_mac} ] || [ "${target_mac}" == "" ]; then
 	echo -e "\033[31mThe target ap mac is null ,now program is exit.\033[0m"
 	exit 1
 fi
-target_ap_name=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|grep --text "${target_mac}"|awk -F "," '{print $(NF-1)}'|cut -c 2-)
+target_ap_name=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|grep --text "${target_mac}"|awk -F "," '{if (NF>1) {print $(NF-1)}}'|awk '{print $1}')
 cur_channel=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|grep --text "${target_mac}"|awk '{print $6}'|awk -F "," '{print $1}'|egrep -v "^0$"|egrep -v "-"|egrep -v "[0-9]+e"|sort|uniq -c|sort -nk 1|tail -n 1|awk "NR==1"'{print $2}')
 
 #kai qi  zhua  bao  xterm
