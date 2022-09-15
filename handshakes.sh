@@ -157,6 +157,9 @@ do
         ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
         while [ ${pid_sum} -gt 0 ] || [ ${ppid_sum} -gt 0 ]
 	do
+		target_pid=$(cat ${work_dir}/airodump-ng.pid)
+	       	pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+	       	ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
 		sleep 1
 	done
 	sleep 3
@@ -242,6 +245,9 @@ pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|w
 ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
 while [ ${pid_sum} -gt 0 ] || [ ${ppid_sum} -gt 0 ]
 do
+	target_pid=$(cat ${work_dir}/airodump-ng.pid)
+	pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+	ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
 	echo -n "Now ${i} seconds has passd.."
 	echo -ne "\r\r"
 	sleep 1
@@ -257,6 +263,9 @@ pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|w
 ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
 while [ ${pid_sum} -gt 0 ] || [ ${ppid_sum} -gt 0 ]
 do
+	target_pid=$(cat ${work_dir}/mdk.pid)
+	pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)     
+	ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
 	sleep 1
 done
 sleep 3
