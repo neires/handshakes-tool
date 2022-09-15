@@ -124,6 +124,28 @@ Select one type what you want to handshake
 EOF
 }
 
+#sao miao all ap function
+scan_all_ap() {
+for i in 1
+do
+	rm -rf ${work_dir}/dump*
+	sleep 3
+	xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Scan all AP" -e airodump-ng ${wlan_card} --band $1 -w ${work_dir}/dump &
+	echo $! >${work_dir}/airodump-ng.pid
+	target_pid=$(cat ${work_dir}/airodump-ng.pid)
+        pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+        ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+        while [ ${pid_sum} -gt 0 ] || [ ${ppid_sum} -gt 0 ]
+	do
+		target_pid=$(cat ${work_dir}/airodump-ng.pid)
+	       	pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+	       	ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+		sleep 1
+	done
+	sleep 3
+done
+}
+
 #xian shi sao miao jie guo function
 display_result_info() {
 IFS=$'\n'
@@ -146,24 +168,7 @@ done
 handshake_bga() {
 #shao  miao   wifi  into  text wifi_info.txt
 echo "starting scan wifi info into ${work_dir}/dump-01.csv...."
-for i in 1
-do
-	rm -rf ${work_dir}/dump*
-	sleep 3
-	xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Scan all AP" -e airodump-ng ${wlan_card} --band $2 -w ${work_dir}/dump &
-	echo $! >${work_dir}/airodump-ng.pid
-	target_pid=$(cat ${work_dir}/airodump-ng.pid)
-        pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
-        ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
-        while [ ${pid_sum} -gt 0 ] || [ ${ppid_sum} -gt 0 ]
-	do
-		target_pid=$(cat ${work_dir}/airodump-ng.pid)
-	       	pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
-	       	ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
-		sleep 1
-	done
-	sleep 3
-done
+scan_all_ap $2
 
 #xian shi sao  miao  jie  guo
 dos2unix ${work_dir}/dump-01.csv
