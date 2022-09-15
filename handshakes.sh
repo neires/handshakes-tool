@@ -152,7 +152,10 @@ do
 	sleep 3
 	xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Scan all AP" -e airodump-ng ${wlan_card} --band $2 -w ${work_dir}/dump &
 	echo $! >${work_dir}/airodump-ng.pid
-	while [ $(ps -ef|grep $(cat ${work_dir}/airodump-ng.pid)|grep -v 'grep'|wc -l) -gt 0 ]
+	target_pid=$(cat ${work_dir}/airodump-ng.pid)
+        pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+        ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+        while [ ${pid_sum} -gt 0 ] || [ ${ppid_sum} -gt 0 ]
 	do
 		sleep 1
 	done
@@ -234,7 +237,10 @@ echo $! >${work_dir}/mdk.pid
 
 #guan bi handshake pid de jian ting program
 i=1
-while [ $(ps -ef|grep $(cat ${work_dir}/airodump-ng.pid)|grep -v 'grep'|wc -l) -gt 0 ]
+target_pid=$(cat ${work_dir}/airodump-ng.pid)
+pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)     
+ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+while [ ${pid_sum} -gt 0 ] || [ ${ppid_sum} -gt 0 ]
 do
 	echo -n "Now ${i} seconds has passd.."
 	echo -ne "\r\r"
@@ -246,7 +252,10 @@ sleep 3
 #guan bi gon ji xterm
 echo -e "\033[32mClose the mdk attack xterm...\033[0m"
 cat ${work_dir}/mdk.pid|xargs -i kill {} >/dev/null 2>&1
-while [ $(ps -ef|grep $(cat ${work_dir}/mdk.pid)|grep -v 'grep'|wc -l) -gt 0 ]
+target_pid=$(cat ${work_dir}/mdk.pid)
+pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)     
+ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+while [ ${pid_sum} -gt 0 ] || [ ${ppid_sum} -gt 0 ]
 do
 	sleep 1
 done
