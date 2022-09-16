@@ -46,7 +46,7 @@ fi
 }
 
 #pan  duan  shi  fou  an zhuang  le  yi  lai  ruan  jian
-for i in mdk3 mdk4 airmon-ng airodump-ng xterm dos2unix
+for i in mdk3 mdk4 airmon-ng airodump-ng xterm dos2unix cowpatty
 do
 	type ${i} >/dev/null 2>&1
 	exit_code=$?
@@ -72,6 +72,9 @@ do
 				;;
 			dos2unix)
 				install_dependent_software dos2unix
+				;;
+			cowpatty)
+				install_dependent_software cowpatty
 				;;
 			*)
 				echo -e "\033[31mUknown error..\033[0m"
@@ -274,8 +277,39 @@ do
 	sleep 1
 done
 sleep 3
+}
 
-#xian shi jie guo info
+#check handshake fuction
+handshake_check() {
+if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
+	echo -e "\033[35mChecking handshake \033[34m[${result_dir}/${target_mac//:/-}-01.cap]\033[0m \033[35m....\033[0m"
+	sleep 3
+	cowpatty -c -r ${result_dir}/${target_mac//:/-}-01.cap >/dev/null 2>&1
+	exit_code=$?
+	if [ ${exit_code} -eq 0 ]; then
+		echo -e "\033[32mThe target handshake \033[34m[${result_dir}/${target_mac//:/-}-01.cap]\033[0m \033[32mcheck sucessfully \033[0m"
+		return 0
+	else
+		echo -e "\033[31mThe target handshake \033[34m[${result_dir}/${target_mac//:/-}-01.cap]\033[0m \033[31mcheck faild \033[0m"
+		return 1
+	fi
+else
+	echo -e "\033[35mChecking handshake \033[34m[${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap]\033[0m \033[35m....\033[0m"
+	sleep 3
+	cowpatty -c -r ${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap >/dev/null 2>&1
+	exit_code=$?
+	if [ ${exit_code} -eq 0 ]; then
+		echo -e "\033[32mThe target handshake \033[34m[${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap]\033[0m \033[32mcheck sucessfully \033[0m"
+		return 0
+	else
+		echo -e "\033[31mThe target handshake \033[34m[${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap]\033[0m \033[31mcheck faild \033[0m"
+		return 1
+	fi
+fi
+}
+
+#xian shi jie guo info function
+display_cap_location() {
 if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
 	echo -e "\033[36mThe handshake cap is saved in [${result_dir}/${target_mac//:/-}-01.cap] \033[0m"
 	exit 0
@@ -293,9 +327,31 @@ do
 	case ${hand_type} in
 		1)
 			handshake_bga mdk3 bg
+			handshake_check
+			exit_code=$?
+			while [ ${exit_code} -ne 0 ]
+			do
+				echo -e "\033[35mRestart handshake program and rechecking....\033[0m"
+				sleep 3
+				handshake_bga mdk3 bg
+				handshake_check
+				exit_code=$?
+			done
+			display_cap_location
 			;;
 		2)
 			handshake_bga mdk4 a
+			handshake_check
+			exit_code=$?
+			while [ ${exit_code} -ne 0 ]
+			do
+				echo -e "\033[35Restart handshake program and rechecking....\033[0m"
+				sleep 3
+				handshake_bga mdk4 a
+				handshake_check
+				exit_code=$?
+			done
+			display_cap_location
 			;;
 		*)
 			clear
