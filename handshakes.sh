@@ -82,7 +82,7 @@ do
 				;;
 		esac
 	fi
-	sleep 1
+	sleep 0.5
 done
 
 #pan duan wang ka  shi  fou  kai qi jian  ting
