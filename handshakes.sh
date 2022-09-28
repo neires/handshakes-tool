@@ -173,8 +173,12 @@ handshake_bga() {
 echo "starting scan wifi info into ${work_dir}/dump-01.csv...."
 scan_all_ap $2
 
+#shu chu cao zuo ti shi info
+echo -e "/n"
+echo -e "\033[33m提示：当目标WiFi出现了，请手动关掉扫描窗口进入下一步！\033[0m"
+
 #xian shi sao  miao  jie  guo
-dos2unix ${work_dir}/dump-01.csv
+dos2unix ${work_dir}/dump-01.csv >/dev/null 2>&1
 display_result_info
 
 #xuan zhe yi  ge  xin hao
@@ -245,6 +249,10 @@ echo  "${target_mac}" >${work_dir}/black_mac_list.txt
 echo  "" >>${work_dir}/black_mac_list.txt
 xterm -geometry "71+0+0" -bg "#000000" -fg "#FF0009" -title "Duan kai conn on ${target_mac}" -e $1 ${wlan_card} d -b ${work_dir}/black_mac_list.txt -c ${cur_channel} &
 echo $! >${work_dir}/mdk.pid
+
+#shu chu cao zuo ti shi info
+echo -e "/n"
+echo -e "\033[33m提示：当目标WiFi握手包出现了，请手动关掉抓包窗口进入下一步！\033[0m"
 
 #guan bi handshake pid de jian ting program
 i=1
