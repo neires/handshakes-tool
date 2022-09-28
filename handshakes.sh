@@ -173,7 +173,7 @@ handshake_bga() {
 echo "starting scan wifi info into ${work_dir}/dump-01.csv...."
 
 #shu chu cao zuo ti shi info
-echo -e "/n"
+echo -e "\n"
 echo -e "\033[33m提示：当目标WiFi出现了，请手动关掉扫描窗口进入下一步！\033[0m"
 scan_all_ap $2
 
@@ -251,7 +251,7 @@ xterm -geometry "71+0+0" -bg "#000000" -fg "#FF0009" -title "Duan kai conn on ${
 echo $! >${work_dir}/mdk.pid
 
 #shu chu cao zuo ti shi info
-echo -e "/n"
+echo -e "\n"
 echo -e "\033[33m提示：当目标WiFi握手包出现了，请手动关掉抓包窗口进入下一步！\033[0m"
 
 #guan bi handshake pid de jian ting program
