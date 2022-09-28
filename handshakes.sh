@@ -171,11 +171,11 @@ done
 handshake_bga() {
 #shao  miao   wifi  into  text wifi_info.txt
 echo "starting scan wifi info into ${work_dir}/dump-01.csv...."
-scan_all_ap $2
 
 #shu chu cao zuo ti shi info
 echo -e "/n"
 echo -e "\033[33m提示：当目标WiFi出现了，请手动关掉扫描窗口进入下一步！\033[0m"
+scan_all_ap $2
 
 #xian shi sao  miao  jie  guo
 dos2unix ${work_dir}/dump-01.csv >/dev/null 2>&1
