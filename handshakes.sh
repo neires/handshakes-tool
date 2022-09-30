@@ -91,10 +91,12 @@ if_list=$(ip a|egrep "^[0-9]+" |awk -F ":" '{print $2}'|awk '{print $1}'|egrep -
 local i=1
 for if_name in ${if_list}
 do
+	dri_num=$(airmon-ng|awk '/Driver/''{for(i=1; i<=NF; i++){print i " => " $i;}}'|grep "Driver"|awk '{print $1}')
+	if_driver=$(airmon-ng|grep "${if_name}" |awk -v dri_num=${dri_num} '{print $dri_num}')
 	if_usb_id=$(cut -b 5-14 < "/sys/class/net/${if_name}/device/modalias" | sed 's/^.//;s/p/:/')
 	if_chipest=$(lsusb|awk -v if_usb_id=${if_usb_id} '{if ($6==if_usb_id) {print $0}}'|awk '{for (i=7;i<=NF;i++) printf("%s ", $i); print ""}')
 	#if_suport_band=
-	echo -e "${i}., ${if_name}, driver&chipest: ${if_chipest}" >> ${work_dir}/interface_list.txt
+	echo -e "${i}., ${if_name}, driver&chipest: ${if_driver} ${if_chipest}" >> ${work_dir}/interface_list.txt
 	let i++
 done
 #du qu list from file
