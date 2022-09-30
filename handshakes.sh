@@ -11,11 +11,8 @@
 #********************************************************************
 
 #ding yi var
-wlan_card=$1
 work_dir=$(dirname $(realpath $0))/temp
 result_dir=$(dirname $(realpath $0))/result
-ip a |grep "${wlan_card}" >/dev/null 2>&1
-interface_status=$?
 
 #pan duan shi fou root yon hu yun xing
 if [ "${UID}" != "0" ]; then
@@ -23,25 +20,17 @@ if [ "${UID}" != "0" ]; then
 	exit 1
 fi
 
-#pan duan shi  fou  shu  ru  wlan_card
-if [ -z ${wlan_card} ];then
-	echo "wlan_card is null , please input wlan_card"
-	echo -e "\033[31mNotice: wlan_card is monintor mode name it's maybe like mon0 || wlan0 || wlan0mon || fluxwl0..\033[0m"
-	echo -e "\033[32mUsage\033[0m: bash $0 wlan_card ; exmple: bash $0 mon0"
-	exit
-fi
-
 #an zhuang yi lai ruan jian function
 install_dependent_software() {
 apt update
 if [ $? -ne 0 ]; then
 	echo -e "\033[31mnetwork error\033[0m"
-	exit 1
+	exit 2
 fi
 apt install $1 -y
 if [ $? -ne 0 ]; then
 	echo -e "\033[31mnetwork error\033[0m"
-	exit 1
+	exit 3
 fi
 }
 
@@ -78,12 +67,89 @@ do
 				;;
 			*)
 				echo -e "\033[31mUknown error..\033[0m"
-				exit 1
+				exit 4
 				;;
 		esac
 	fi
-	sleep 0.5
+	sleep 0.1
 done
+
+#pan duan work_dir shi  fou  cun  zai
+if [ ! -d ${work_dir} ];then
+	mkdir ${work_dir} -p
+fi
+#pan duan result_dir shi  fou  cun  zai
+if [ ! -d ${result_dir} ];then
+	mkdir ${result_dir} -p
+fi
+
+#======================xian shi  wlan0 info function============================
+function show_interface_list() {
+#bao cun list to file
+rm -rf ${work_dir}/interface_list.txt >/dev/null 2>&1
+if_list=$(ip a|egrep "^[0-9]+" |awk -F ":" '{print $2}'|awk '{print $1}'|egrep -v "^lo$")
+local i=1
+for if_name in ${if_list}
+do
+	if_chipest=$(airmon-ng|awk -v if_name=${if_name} '{if ($2==if_name) {print $3,$4,$5,$6,$7,$8,$9,$10,$11}}')
+	#if_suport_band=
+	echo -e "${i}., ${if_name}, driver&chipest: ${if_chipest}" >> ${work_dir}/interface_list.txt
+	let i++
+done
+#du qu list from file
+while IFS=, read -r if_num if_name if_chipest; do
+	echo -e "\033[32m${if_num} ${if_name}\033[0m ${if_chipest}"
+done < "${work_dir}/interface_list.txt"
+}
+
+#=======================select wlan card=======================================
+clear
+show_interface_list
+echo -ne "\033[33mPlease select one interface: \033[0m"
+read inface_num
+while true
+do
+	if [ -z "${inface_num}" ] || [ "${inface_num}" == "" ]; then
+		clear
+		show_interface_list
+		echo -e "\033[31mInface_num can not be null\033[0m"
+		echo -ne "\033[33mPlease select one interface: \033[0m"
+		read inface_num
+	elif [ "${inface_num}" == "0" ]; then
+		clear
+		show_interface_list
+		echo -e "\033[31mInface_num can not be 0\033[0m"
+		echo -ne "\033[33mPlease select one interface: \033[0m"
+		read inface_num
+	elif [[ ! "${inface_num}" =~ ^[0-9]+$ ]]; then
+		clear
+		show_interface_list
+		echo -e "\033[31mInface_num must be a number type\033[0m"
+		echo -ne "\033[33mPlease select one interface: \033[0m"
+		read inface_num
+	elif [ "${inface_num}" -gt $(show_interface_list|wc -l) ]; then
+		clear
+		show_interface_list
+		echo -e "\033[31mInface_num must be less than the interface list total num\033[0m"
+		echo -ne "\033[33mPlease select one interface: \033[0m"
+		read inface_num
+	else
+		break
+	fi
+done
+
+#=====================shu chu ni  de  xuan  zhe  jie  guo====================
+wlan_card=$(cat "${work_dir}/interface_list.txt"|awk -F "," "NR==${inface_num}"'{print $2}'|awk '{print $1}')
+airmon-ng | grep "${wlan_card}" >/dev/null 2>&1
+card_check_status=$?
+if [ ${card_check_status} -eq 0 ]; then
+	echo -e "\033[35mYour selected interface is\033[0m \033[32m[${wlan_card}]\033[0m \033[35mbe suported\033[0m"
+else
+	echo -e "\033[35mYour selected interface is\033[0m \033[32m[${wlan_card}]\033[0m \033[31mnot be suported\033[0m"
+	exit 5
+fi
+ip a |grep "${wlan_card}" >/dev/null 2>&1
+interface_status=$?
 
 #pan duan wang ka  shi  fou  kai qi jian  ting
 if [ ${interface_status} -eq 0 ];then
@@ -100,20 +166,11 @@ if [ ${interface_status} -eq 0 ];then
 		echo -e "\033[32mSUCESS..\033[0m"
 	else
 		echo -e "\033[31mFALED..\033[0m"
-		exit 1
+		exit 6
 	fi
 else
 	echo -e "\033[33mThere is no such device ${wlan_card}, please make sure that you plug in the device and work normally\033[0m"
-	exit 1
-fi
-
-#pan duan work_dir shi  fou  cun  zai
-if [ ! -d ${work_dir} ];then
-	mkdir ${work_dir} -p
-fi
-#pan duan result_dir shi  fou  cun  zai
-if [ ! -d ${result_dir} ];then
-	mkdir ${result_dir} -p
+	exit 7
 fi
 
 #xuan zhe gon ji mode
@@ -215,7 +272,7 @@ done
 target_mac=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$"|awk -F "," "NR==${ap_num}"'{print $1}')
 if [ -z ${target_mac} ] || [ "${target_mac}" == "" ]; then
 	echo -e "\033[31mThe target ap mac is null ,now program is exit.\033[0m"
-	exit 1
+	exit 8
 fi
 target_ap_name=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|grep --text "${target_mac}"|awk -F "," '{if (NF>1) {print $(NF-1)}}'|awk '{print $1}')
 cur_channel=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|grep --text "${target_mac}"|awk '{print $6}'|awk -F "," '{print $1}'|egrep -v "^0$"|egrep -v "-"|egrep -v "[0-9]+e"|sort|uniq -c|sort -nk 1|tail -n 1|awk "NR==1"'{print $2}')
