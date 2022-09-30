@@ -127,7 +127,7 @@ do
 		echo -e "\033[31mInface_num must be a number type\033[0m"
 		echo -ne "\033[33mPlease select one interface: \033[0m"
 		read inface_num
-	elif [ "${inface_num}" -gt $(show_interface_list|wc -l) ]; then
+	elif [ "${inface_num}" -gt $(cat "${work_dir}/interface_list.txt"|wc -l) ]; then
 		clear
 		show_interface_list
 		echo -e "\033[31mInface_num must be less than the interface list total num\033[0m"
