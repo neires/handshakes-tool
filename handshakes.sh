@@ -96,7 +96,7 @@ do
 	if_usb_id=$(cut -b 5-14 < "/sys/class/net/${if_name}/device/modalias" | sed 's/^.//;s/p/:/')
 	if_chipest=$(lsusb|awk -v if_usb_id=${if_usb_id} '{if ($6==if_usb_id) {print $0}}'|awk '{for (i=7;i<=NF;i++) printf("%s ", $i); print ""}')
 	#if_suport_band=
-	echo -e "${i}., ${if_name}, driver&chipest: ${if_driver} ${if_chipest}" >> ${work_dir}/interface_list.txt
+	echo -e "${i}., ${if_name}, driver: ${if_driver} chipest: ${if_chipest}" >> ${work_dir}/interface_list.txt
 	let i++
 done
 #du qu list from file
