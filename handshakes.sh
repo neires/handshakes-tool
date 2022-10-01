@@ -91,8 +91,9 @@ if_list=$(ip a|egrep "^[0-9]+" |awk -F ":" '{print $2}'|awk '{print $1}'|egrep -
 local i=1
 for if_name in ${if_list}
 do
+	iface_num=$(airmon-ng|awk '/Interface/''{for(i=1; i<=NF; i++){print i " => " $i;}}'|grep "Interface"|awk '{print $1}')
 	dri_num=$(airmon-ng|awk '/Driver/''{for(i=1; i<=NF; i++){print i " => " $i;}}'|grep "Driver"|awk '{print $1}')
-	if_driver=$(airmon-ng|grep "${if_name}" |awk -v dri_num=${dri_num} '{print $dri_num}')
+	if_driver=$(airmon-ng|awk -v iface_num=${iface_num} -v if_name=${if_name} '{if($iface_num==if_name) {print $0}}'|awk -v dri_num=${dri_num} '{print $dri_num}')
 	if_usb_id=$(cut -b 5-14 < "/sys/class/net/${if_name}/device/modalias" | sed 's/^.//;s/p/:/')
 	if_chipest=$(lsusb|awk -v if_usb_id=${if_usb_id} '{if ($6==if_usb_id) {print $0}}'|awk '{for (i=7;i<=NF;i++) printf("%s ", $i); print ""}')
 	#if_suport_band=
