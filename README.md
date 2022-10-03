@@ -2,5 +2,5 @@
 使用方法：
 
 ```shell
-bash handshakes.sh
+bash handshakes_tool.sh
 ```
