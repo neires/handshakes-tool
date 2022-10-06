@@ -263,9 +263,9 @@ echo -e "\033[33m提示：当目标WiFi出现了，请手动关掉扫描窗口�
 scan_all_ap $1
 
 #xian shi sao  miao  jie  guo
-clear
 dos2unix ${work_dir}/dump-01.csv >/dev/null 2>&1
 prepare_server_client_list
+clear
 display_result_info
 
 #xuan zhe yi  ge  xin hao
