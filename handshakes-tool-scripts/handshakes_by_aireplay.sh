@@ -213,14 +213,35 @@ do
 done
 }
 
+#=============chai fen  server_list and client_list function==============
+prepare_server_client_list() {
+rm -rf ${work_dir}/server_list.csv >/dev/null 2>&1
+rm -rf ${work_dir}/client_list.csv >/dev/null 2>&1
+rm -rf ${work_dir}/client.txt >/dev/null 2>&1
+target_line=$(cat ${work_dir}/dump-01.csv|awk '/(^Station[s]?|^Client[es]?)/{print NR}')
+target_line=$(awk -v target_line=${target_line} 'BEGIN{print target_line-1}')
+cat ${work_dir}/dump-01.csv|head -n ${target_line}|dos2unix|egrep -v --text "^$" > "${work_dir}/server_list.csv"
+cat ${work_dir}/dump-01.csv|tail -n +${target_line}|dos2unix|egrep -v --text "^$" > "${work_dir}/client_list.csv"
+
+#zhun bei sniff client list
+while IFS=, read -r _ _ _ _ _ server_mac server_name; do
+	server_mac_char=${#server_mac}
+	if [ ${server_mac_char} -ge 17 ]; then
+		server_mac=$(echo ${server_mac} | awk '{gsub(/ /,""); print}')
+		echo -e "${server_mac},${server_name}" >> "${work_dir}/client.txt"
+	fi
+done < "${work_dir}/client_list.csv"
+sleep 3
+}
+
 #xian shi sao miao jie guo function
 display_result_info() {
 IFS=$'\n'
 a=1
-for i in $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$")
+for i in $(cat ${work_dir}/server_list.csv|egrep --text -v "SSID,"|egrep --text -v "^$")
 do
 	temp_mac=$(echo ${i}|awk -F "," '{print $1}')
-	cat ${work_dir}/dump-01.csv|sed -e:b -e '$!{N;1,80000bb' -e\} -e '/\n.*Station MAC/!P;D'|egrep --text -v "Station MAC"|egrep --text -v "^$"|grep --text ${temp_mac} >/dev/null 2>&1
+	cat ${work_dir}/client.txt|grep --text ${temp_mac} >/dev/null 2>&1
 	client_stat=$?
 	if [ "${client_stat}" == "0" ]; then
 		echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
@@ -244,6 +265,7 @@ scan_all_ap $1
 #xian shi sao  miao  jie  guo
 clear
 dos2unix ${work_dir}/dump-01.csv >/dev/null 2>&1
+prepare_server_client_list
 display_result_info
 
 #xuan zhe yi  ge  xin hao
@@ -260,7 +282,7 @@ do
 		display_result_info
 		echo -e "\033[33mAP_num must be a number and can not be null!!\033[0m"
 		read -p "Select one AP what you want to handshake [num]: " ap_num
-	elif [ ${ap_num} -gt $(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$"|wc -l) ]; then
+	elif [ ${ap_num} -gt $(cat ${work_dir}/server_list.csv|egrep --text -v "SSID,"|egrep --text -v "^$"|wc -l) ]; then
 		clear
 		display_result_info
 		echo -e "\033[33mAP_num con't be great of total number for ap list!!\033[0m"
@@ -276,13 +298,13 @@ do
 done
 
 #ding yi mu biao  AP mac and xin dao
-target_mac=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|egrep --text -v "Station MAC"|egrep --text -v "SSID,"|egrep --text -v "^$"|awk -F "," "NR==${ap_num}"'{print $1}')
+target_mac=$(cat ${work_dir}/server_list.csv|egrep --text -v "SSID,"|egrep --text -v "^$"|awk -F "," "NR==${ap_num}"'{print $1}')
 if [ -z ${target_mac} ] || [ "${target_mac}" == "" ]; then
 	echo -e "\033[31mThe target ap mac is null ,now program is exit.\033[0m"
 	exit 8
 fi
-target_ap_name=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|grep --text "${target_mac}"|awk -F "," '{if (NF>1) {print $(NF-1)}}'|awk '{print $1}')
-cur_channel=$(cat ${work_dir}/dump-01.csv|sed -r '/Station MAC/, +80000{/Station MAC/b; d}'|grep --text "${target_mac}"|awk '{print $6}'|awk -F "," '{print $1}'|egrep -v "^0$"|egrep -v "-"|egrep -v "[0-9]+e"|sort|uniq -c|sort -nk 1|tail -n 1|awk "NR==1"'{print $2}')
+target_ap_name=$(cat ${work_dir}/server_list.csv|grep --text "${target_mac}"|awk -F "," '{if (NF>1) {print $(NF-1)}}'|awk '{print $1}')
+cur_channel=$(cat ${work_dir}/server_list.csv|grep --text "${target_mac}"|awk '{print $6}'|awk -F "," '{print $1}'|egrep -v "^0$"|egrep -v "-"|egrep -v "[0-9]+e"|sort|uniq -c|sort -nk 1|tail -n 1|awk "NR==1"'{print $2}')
 
 #kai qi  zhua  bao  xterm
 if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
