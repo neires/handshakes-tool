@@ -289,7 +289,7 @@ echo -e "\n"
 echo -e "\033[33m提示：当目标WiFi握手包出现了，请手动关掉抓包窗口进入下一步！\033[0m"
 
 #guan bi gon ji xterm
-sleep 10
+sleep 15
 echo -e "\033[32mClose the mdk attack xterm...\033[0m"
 cat ${work_dir}/mdk.pid|xargs -i kill {} >/dev/null 2>&1
 target_pid=$(cat ${work_dir}/mdk.pid)
