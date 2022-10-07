@@ -416,6 +416,7 @@ case ${hand_type} in
 		;;
 	*)
 		clear
+		handshake_menu
 		;;
 esac
 }
