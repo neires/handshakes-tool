@@ -287,6 +287,22 @@ echo $! >${work_dir}/aireplay-ng.pid
 echo -e "\n"
 echo -e "\033[33m提示：当目标WiFi握手包出现了，请手动关掉抓包窗口进入下一步！\033[0m"
 
+#guan bi gon ji xterm
+sleep 10
+echo -e "\033[32mClose the aireplay-ng attack xterm...\033[0m"
+cat ${work_dir}/aireplay-ng.pid|xargs -i kill {} >/dev/null 2>&1
+target_pid=$(cat ${work_dir}/aireplay-ng.pid)
+pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)     
+ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+while [ ${pid_sum} -gt 0 ] || [ ${ppid_sum} -gt 0 ]
+do
+	target_pid=$(cat ${work_dir}/aireplay-ng.pid)
+	pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)     
+	ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
+	sleep 1
+done
+sleep 3
+
 #guan bi handshake pid de jian ting program
 i=1
 target_pid=$(cat ${work_dir}/airodump-ng.pid)
@@ -301,21 +317,6 @@ do
 	echo -ne "\r\r"
 	sleep 1
 	let i+=1
-done
-sleep 3
-
-#guan bi gon ji xterm
-echo -e "\033[32mClose the aireplay-ng attack xterm...\033[0m"
-cat ${work_dir}/aireplay-ng.pid|xargs -i kill {} >/dev/null 2>&1
-target_pid=$(cat ${work_dir}/aireplay-ng.pid)
-pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)     
-ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
-while [ ${pid_sum} -gt 0 ] || [ ${ppid_sum} -gt 0 ]
-do
-	target_pid=$(cat ${work_dir}/aireplay-ng.pid)
-	pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)     
-	ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
-	sleep 1
 done
 sleep 3
 }
