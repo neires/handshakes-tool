@@ -29,6 +29,7 @@ fi
 function show_interface_list() {
 #bao cun list to file
 rm -rf ${work_dir}/interface_list.txt >/dev/null 2>&1
+sleep 2
 if_list=$(ip a|egrep "^[0-9]+" |awk -F ":" '{print $2}'|awk '{print $1}'|egrep -v "^lo$")
 local i=1
 for if_name in ${if_list}
@@ -130,7 +131,7 @@ scan_all_ap() {
 for i in 1
 do
 	rm -rf ${work_dir}/dump*
-	sleep 3
+	sleep 2
 	xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Scan all AP" -e airodump-ng ${wlan_card} --band $1 -w ${work_dir}/dump &
 	echo $! >${work_dir}/airodump-ng.pid
 	target_pid=$(cat ${work_dir}/airodump-ng.pid)
@@ -143,7 +144,7 @@ do
 	       	ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
 		sleep 1
 	done
-	sleep 3
+	sleep 2
 done
 }
 
@@ -154,6 +155,7 @@ prepare_server_client_list() {
 rm -rf ${work_dir}/server_list.csv >/dev/null 2>&1
 rm -rf ${work_dir}/client_list.csv >/dev/null 2>&1
 rm -rf ${work_dir}/client.txt >/dev/null 2>&1
+sleep 2
 target_line=$(cat ${work_dir}/dump-01.csv|awk '/(^Station[s]?|^Client[es]?)/{print NR}')
 target_line=$(awk -v target_line=${target_line} 'BEGIN{print target_line-1}')
 cat ${work_dir}/dump-01.csv|head -n ${target_line}|dos2unix|egrep -v --text "^$" > "${work_dir}/server_list.csv"
@@ -167,7 +169,7 @@ while IFS=, read -r _ _ _ _ _ server_mac server_name; do
 		echo -e "${server_mac},${server_name}" >> "${work_dir}/client.txt"
 	fi
 done < "${work_dir}/client_list.csv"
-sleep 3
+sleep 2
 }
 
 #===========================================================================================================================================
@@ -260,10 +262,10 @@ if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
 	for i in 1
 	do
 		rm -rf ${result_dir}/${target_mac//:/-}*
-		sleep 3
+		sleep 2
 		xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Handshake AP for ${target_mac}" -e airodump-ng --ignore-negative-one -d ${target_mac} -w ${result_dir}/${target_mac//:/-} -c ${cur_channel} -a ${wlan_card} &
 		echo $! >${work_dir}/airodump-ng.pid
-		sleep 3
+		sleep 2
 	done
 else
 	echo -e "\033[35mThe handshake program xterm have started.\033[0m"
@@ -271,10 +273,10 @@ else
 	for i in 1
 	do
 		rm -rf ${result_dir}/${target_ap_name}-${target_mac//:/-}*
-		sleep 3
+		sleep 2
 		xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Handshake AP for ${target_mac}" -e airodump-ng --ignore-negative-one -d ${target_mac} -w ${result_dir}/${target_ap_name}-${target_mac//:/-} -c ${cur_channel} -a ${wlan_card} &
 		echo $! >${work_dir}/airodump-ng.pid
-		sleep 3
+		sleep 2
 	done
 fi
 
@@ -301,7 +303,7 @@ do
 	ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
 	sleep 1
 done
-sleep 3
+sleep 2
 
 #guan bi handshake pid de jian ting program
 i=1
@@ -318,7 +320,7 @@ do
 	sleep 1
 	let i+=1
 done
-sleep 3
+sleep 2
 }
 
 #===========================================================================================================================================
