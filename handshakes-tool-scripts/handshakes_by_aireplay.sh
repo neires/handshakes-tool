@@ -103,20 +103,27 @@ interface_status=$?
 
 #pan duan wang ka  shi  fou  kai qi jian  ting
 if [ ${interface_status} -eq 0 ];then
-	echo "start interface to monintor mode..."
-	airmon-ng check kill
-	check_kill=$?
-	ip link set ${wlan_card} down
-	if_down=$?
-	iw dev ${wlan_card} set type monitor
-	if_monitor=$?
-	ip link set ${wlan_card} up
-	if_up=$?
-	if [ ${check_kill} -eq 0 ] && [ ${if_down} -eq 0 ] && [ ${if_monitor} -eq 0 ] && [ ${if_up} -eq 0 ]; then
-		echo -e "\033[32mSUCESS..\033[0m"
+	echo -e "\033[33mChecking interface ${wlan_card} work mode monitor.....\033[0m"
+	iwconfig ${wlan_card}|grep "Mode:Monitor" >/dev/null 2>&1
+	monitor_check=$?
+	if [ ${monitor_check} -ne 0 ]; then
+		echo -e "\033[31mCHECK FAILD\033[0m \033[35mStart interface to monintor mode...\033[0m"
+		airmon-ng check kill
+		check_kill=$?
+		ip link set ${wlan_card} down
+		if_down=$?
+		iw dev ${wlan_card} set type monitor
+		if_monitor=$?
+		ip link set ${wlan_card} up
+		if_up=$?	
+		if [ ${check_kill} -eq 0 ] && [ ${if_down} -eq 0 ] && [ ${if_monitor} -eq 0 ] && [ ${if_up} -eq 0 ]; then
+			echo -e "\033[32mSUCESS..\033[0m"
+		else
+			echo -e "\033[31mFALED..\033[0m"
+			exit 6
+		fi
 	else
-		echo -e "\033[31mFALED..\033[0m"
-		exit 6
+		echo -e "\033[32mCHECK OK\033[0m \033[35mThis interface ${wlan_card} already in monitor mode, continue !\033[0m"
 	fi
 else
 	echo -e "\033[33mThere is no such device ${wlan_card}, please make sure that you plug in the device and work normally\033[0m"
