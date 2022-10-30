@@ -50,13 +50,6 @@ sleep 0.1
 echo -e "\033[35mWMWMWMWMWMWMWMWMWMWMWMWMWMWMWWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWMWM\033[0m"
 sleep 0.1
 
-#check and kill wlan card busy pid
-airmon-ng check kill >/dev/null 2>&1
-if [ $? -ne 0 ]; then
-	echo -e "\033[31mError for check kill Disturbed process, quit !\033[0m"
-	exit 1
-fi
-
 #print process info
 i=1
 while [ ${i} -lt 5 ]; do
@@ -129,6 +122,15 @@ do
 	fi
 	sleep 0.1
 done
+
+#===========================================================================================================================================
+#=====================                               check and kill wlan card busy pid                           ===========================
+#===========================================================================================================================================
+airmon-ng check kill >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+	echo -e "\033[31mError for check kill Disturbed process, quit !\033[0m"
+	exit 1
+fi
 
 #===========================================================================================================================================
 #=====================                                        print notice info                                  ===========================
