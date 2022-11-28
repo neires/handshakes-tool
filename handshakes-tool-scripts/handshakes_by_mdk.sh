@@ -169,6 +169,7 @@ cat ${work_dir}/dump-01.csv|head -n ${target_line}|dos2unix|egrep -v --text "^$"
 cat ${work_dir}/dump-01.csv|tail -n +${target_line}|dos2unix|egrep -v --text "^$" > "${work_dir}/client_list.csv"
 
 #zhun bei sniff client list
+echo -e "server_mac,server_name" >> "${work_dir}/client.txt"
 while IFS=, read -r _ _ _ _ _ server_mac server_name; do
 	server_mac_char=${#server_mac}
 	if [ ${server_mac_char} -ge 17 ]; then
