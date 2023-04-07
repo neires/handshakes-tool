@@ -81,7 +81,7 @@ fi
 }
 
 #pan  duan  shi  fou  an zhuang  le  yi  lai  ruan  jian
-for i in mdk3 mdk4 airmon-ng airodump-ng xterm dos2unix cowpatty aireplay-ng
+for i in mdk3 mdk4 airmon-ng airodump-ng xterm dos2unix cowpatty aireplay-ng macchanger
 do
 	type ${i} >/dev/null 2>&1
 	exit_code=$?
@@ -113,6 +113,9 @@ do
 				;;
 			cowpatty)
 				install_dependent_software cowpatty
+				;;
+			macchanger)
+				install_dependent_software macchanger
 				;;
 			*)
 				echo -e "\033[31mUknown error..\033[0m"

