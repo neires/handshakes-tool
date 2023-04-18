@@ -2,10 +2,10 @@
 #
 #********************************************************************
 #Author:                QianSong
-#QQ:                    1725099638
+#QQ:                    xxxxxxxx
 #Date:                  2022-10-03
 #FileName：             handshakes_tool.sh
-#URL:                   https://github.com/QianSong1
+#URL:                   https://github.com
 #Description：          The handshakes tools select script
 #Copyright (C):         QianSong 2022 All rights reserved
 #********************************************************************

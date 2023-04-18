@@ -2,10 +2,10 @@
 #
 #********************************************************************
 #Author:                QianSong
-#QQ:                    1725099638
+#QQ:                    xxxxxxxx
 #Date:                  2022-09-13
 #FileName：             handshakes_by_mdk.sh
-#URL:                   https://github.com/QianSong1
+#URL:                   https://github.com
 #Description：          The handshake wifi cap info script
 #Copyright (C):         QianSong 2022 All rights reserved
 #********************************************************************
