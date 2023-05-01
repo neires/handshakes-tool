@@ -15,7 +15,7 @@ source_dir=$(dirname $(realpath $0))/handshakes-tool-scripts
 
 #pan duan shi fou root yon hu yun xing
 if [ "${UID}" != "0" ]; then
-	echo -e "\033[31mPermission denied, please run this script as root.\033[0m"
+	echo -e "\033[31mBerechtigung verweigert, bitte führen Sie dieses Skript als root aus.\033[0m"
 	exit 1
 fi
 
@@ -70,12 +70,12 @@ sleep 0.3
 install_dependent_software() {
 apt update
 if [ $? -ne 0 ]; then
-	echo -e "\033[31mnetwork error\033[0m"
+	echo -e "\033[31mNetzwerkfehler\033[0m"
 	exit 2
 fi
 apt install $1 -y
 if [ $? -ne 0 ]; then
-	echo -e "\033[31mnetwork error\033[0m"
+	echo -e "\033[31mNetzwerkfehler\033[0m"
 	exit 3
 fi
 }
@@ -88,7 +88,7 @@ do
 	if [ ${exit_code} -eq 0 ]; then
 		echo -e "${i}.....................\033[32mOK\033[0m"
 	else
-		echo -e "${i}.....................\033[33mInstalling\033[0m"
+		echo -e "${i}.....................\033[33mInstalliere\033[0m"
 		case ${i} in
 			mdk3)
 				install_dependent_software mdk3
@@ -131,7 +131,7 @@ done
 #===========================================================================================================================================
 airmon-ng check kill >/dev/null 2>&1
 if [ $? -ne 0 ]; then
-	echo -e "\033[31mError for check kill Disturbed process, quit !\033[0m"
+	echo -e "\033[31mFehler beim Prüfen des gestörten Prozesses, Beenden!!\033[0m"
 	exit 1
 fi
 
@@ -139,7 +139,7 @@ fi
 #=====================                                        print notice info                                  ===========================
 #===========================================================================================================================================
 echo -e "\n"
-echo -e "\033[33m加载完毕！正在为您启动，请稍等鸡儿几秒钟.......\033[0m"
+echo -e "\033[33mDas Laden ist abgeschlossen! Es startet für Sie, bitte warten Sie ein paar Sekunden für das Huhn .......\033[0m"
 sleep 5
 clear
 
@@ -147,10 +147,10 @@ clear
 #====================                                      xuan zhe gon ji tool function                             =======================
 #===========================================================================================================================================
 handshake_tool_menu() {
-echo -e "\033[33mSelect one tool what you want to use\033[0m"
+echo -e "\033[33mWählen Sie ein Werkzeug aus, das Sie verwenden möchten\033[0m"
 echo -e "\033[36m************************************\033[0m"
-echo -e "\033[32m1.        mdk-tool(推荐)\033[0m           \033[36m*\033[0m"
-echo -e "\033[32m2.        aireplay-tool(备选)\033[0m      \033[36m*\033[0m"
+echo -e "\033[32m1.        mdk-tool(empfohlen)\033[0m           \033[36m*\033[0m"
+echo -e "\033[32m2.        aireplay-tool(Alternative)\033[0m      \033[36m*\033[0m"
 echo -e "\033[36m************************************\033[0m"
 read -p "Please select: " handshake_tool
 case ${handshake_tool} in
