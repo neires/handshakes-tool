@@ -1,5 +1,5 @@
 # handshakes-tool
-使用方法：
+Wie zu verwenden：
 
 ```shell
 bash handshakes_tool.sh
