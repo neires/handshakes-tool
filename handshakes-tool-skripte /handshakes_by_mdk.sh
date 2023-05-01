@@ -55,33 +55,33 @@ done < "${work_dir}/interface_list.txt"
 function select_interface() {
 clear
 show_interface_list
-echo -ne "\033[33mPlease select one interface: \033[0m"
+echo -ne "\033[33mBitte wählen Sie eine Schnittstelle: \033[0m"
 read inface_num
 while true
 do
 	if [ -z "${inface_num}" ] || [ "${inface_num}" == "" ]; then
 		clear
 		show_interface_list
-		echo -e "\033[31mInface_num can not be null\033[0m"
-		echo -ne "\033[33mPlease select one interface: \033[0m"
+		echo -e "\033[31mInface_num kann nicht null sein\033[0m"
+		echo -ne "\033[33mBitte wählen Sie eine Schnittstelle: \033[0m"
 		read inface_num
 	elif [ "${inface_num}" == "0" ]; then
 		clear
 		show_interface_list
-		echo -e "\033[31mInface_num can not be 0\033[0m"
-		echo -ne "\033[33mPlease select one interface: \033[0m"
+		echo -e "\033[31mInface_num kann nich 0 sein\033[0m"
+		echo -ne "\033[33mBitte wählen Sie eine Schnittstelle: \033[0m"
 		read inface_num
 	elif [[ ! "${inface_num}" =~ ^[0-9]+$ ]]; then
 		clear
 		show_interface_list
-		echo -e "\033[31mInface_num must be a number type\033[0m"
-		echo -ne "\033[33mPlease select one interface: \033[0m"
+		echo -e "\033[31mInface_num muss ein Zahlentyp sein\033[0m"
+		echo -ne "\033[33mBitte wählen Sie eine Schnittstelle: \033[0m"
 		read inface_num
 	elif [ "${inface_num}" -gt $(cat "${work_dir}/interface_list.txt"|wc -l) ]; then
 		clear
 		show_interface_list
-		echo -e "\033[31mInface_num must be less than the interface list total num\033[0m"
-		echo -ne "\033[33mPlease select one interface: \033[0m"
+		echo -e "\033[31mInface_num muss kleiner sein als die Gesamtzahl der Schnittstellenlisten\033[0m"
+		echo -ne "\033[33mBitte wählen Sie ein Interface: \033[0m"
 		read inface_num
 	else
 		break
@@ -93,9 +93,9 @@ wlan_card=$(cat "${work_dir}/interface_list.txt"|awk -F "," "NR==${inface_num}"'
 airmon-ng | grep "${wlan_card}" >/dev/null 2>&1
 card_check_status=$?
 if [ ${card_check_status} -eq 0 ]; then
-	echo -e "\033[35mYour selected interface is\033[0m \033[32m[${wlan_card}]\033[0m \033[35mbe suported\033[0m"
+	echo -e "\033[35mDie von Ihnen gewählte Schnittstelle ist\033[0m \033[32m[${wlan_card}]\033[0m \033[35mwird unterstütztd\033[0m"
 else
-	echo -e "\033[35mYour selected interface is\033[0m \033[32m[${wlan_card}]\033[0m \033[31mnot be suported\033[0m"
+	echo -e "\033[35mDie von Ihnen gewählte Schnittstelle ist\033[0m \033[32m[${wlan_card}]\033[0m \033[31mwird nicht unterstützt\033[0m"
 	exit 5
 fi
 ip a |grep "${wlan_card}" >/dev/null 2>&1
@@ -103,11 +103,11 @@ interface_status=$?
 
 #pan duan wang ka  shi  fou  kai qi jian  ting
 if [ ${interface_status} -eq 0 ];then
-	echo -e "\033[33mChecking interface ${wlan_card} work mode monitor.....\033[0m"
+	echo -e "\033[33mÜberprüfung der Schnittstelle ${wlan_card} Arbeitsmodus Monitor.....\033[0m"
 	iwconfig ${wlan_card}|grep "Mode:Monitor" >/dev/null 2>&1
 	monitor_check=$?
 	if [ ${monitor_check} -ne 0 ]; then
-		echo -e "\033[31mCHECK FAILD\033[0m \033[35mStart interface to monintor mode...\033[0m"
+		echo -e "\033[31mPrüfung fehlgeschlagen\033[0m \033[35mSchnittstelle zum Monintor Mod starten...\033[0m"
 		airmon-ng check kill
 		check_kill=$?
 		ip link set ${wlan_card} down
@@ -117,16 +117,16 @@ if [ ${interface_status} -eq 0 ];then
 		ip link set ${wlan_card} up
 		if_up=$?	
 		if [ ${check_kill} -eq 0 ] && [ ${if_down} -eq 0 ] && [ ${if_monitor} -eq 0 ] && [ ${if_up} -eq 0 ]; then
-			echo -e "\033[32mSUCESS..\033[0m"
+			echo -e "\033[32mErfolgreich..\033[0m"
 		else
-			echo -e "\033[31mFALED..\033[0m"
+			echo -e "\033[31mfehlgeschlagen..\033[0m"
 			exit 6
 		fi
 	else
-		echo -e "\033[32mCHECK OK\033[0m \033[35mThis interface ${wlan_card} already in monitor mode, continue !\033[0m"
+		echo -e "\033[32mCHECK OK\033[0m \033[35mDiese Schnittstelle ${wlan_card} ist bereits im monitor mode, fortfahren !\033[0m"
 	fi
 else
-	echo -e "\033[33mThere is no such device ${wlan_card}, please make sure that you plug in the device and work normally\033[0m"
+	echo -e "\033[33mEs gibt kein solches Gerät ${wlan_card}, bitte stellen Sie sicher, dass Sie das Gerät eingesteckt haben und dieses normal arbeitet.\033[0m"
 	exit 7
 fi
 }
@@ -139,7 +139,7 @@ for i in 1
 do
 	rm -rf ${work_dir}/dump*
 	sleep 2
-	xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Scan all AP" -e airodump-ng ${wlan_card} --band $1 -w ${work_dir}/dump &
+	xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Alle AP scannen" -e airodump-ng ${wlan_card} --band $1 -w ${work_dir}/dump &
 	echo $! >${work_dir}/airodump-ng.pid
 	target_pid=$(cat ${work_dir}/airodump-ng.pid)
         pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
@@ -201,7 +201,7 @@ if [ ${server_list_total} -gt 0 ]; then
 		let a++
 	done
 else
-	echo -e "\033[31mNo network at the list, press [enter] to restart new hack\033[0m"
+	echo -e "\033[31mKein Netzwerk in der Liste, drücken Sie [enter] zum Neustart eines neuen Hacks\033[0m"
 	read -p ">" you_zl
 	handshake_menu
 fi
@@ -221,11 +221,11 @@ ip link set ${wlan_card} up >/dev/null 2>&1
 #===========================================================================================================================================
 handshake_bga() {
 #shao  miao   wifi  into  text wifi_info.txt
-echo "starting scan wifi info into ${work_dir}/dump-01.csv...."
+echo "Start des Scannens von Wifi-Informationen in ${work_dir}/dump-01.csv...."
 
 #shu chu cao zuo ti shi info
 echo -e "\n"
-echo -e "\033[33m提示：当目标WiFi出现了，请手动关掉扫描窗口进入下一步！\033[0m"
+echo -e "\033[33mHinweis: Wenn das Ziel-WiFi erscheint, schließen Sie das Scanfenster manuell, um zum nächsten Schritt zu gelangen!\033[0m"
 scan_all_ap $2
 
 #xian shi sao  miao  jie  guo
@@ -235,29 +235,29 @@ clear
 display_result_info
 
 #xuan zhe yi  ge  xin hao
-read -p "Select one AP what you want to handshake [num]: " ap_num
+read -p "Wählen Sie einen AP, den Sie schütteln möchten [num]: " ap_num
 while true
 do
 	if [ -z ${ap_num} ]; then
 		clear
 		display_result_info
-		echo -e "\033[33mAP_num must be a number and can not be null!!\033[0m"
-		read -p "Select one AP what you want to handshake [num]: " ap_num
+		echo -e "\033[33mAP_num muss eine Zahl sein und darf nicht null sein!!\033[0m"
+		read -p "Wählen Sie einen AP, den Sie schütteln möchten [num]: " ap_num
 	elif [[ ! ${ap_num} =~ ^[0-9]+$ ]]; then
 		clear
 		display_result_info
-		echo -e "\033[33mAP_num must be a number and can not be null!!\033[0m"
-		read -p "Select one AP what you want to handshake [num]: " ap_num
+		echo -e "\033[33mAP_num muss eine Zahl sein und darf nicht null sein!!\033[0m"
+		read -p "Wählen Sie einen AP, den Sie schütteln möchten [num]: " ap_num
 	elif [ ${ap_num} -gt $(cat ${work_dir}/server_list.csv|egrep --text -v "SSID,"|egrep --text -v "^$"|wc -l) ]; then
 		clear
 		display_result_info
-		echo -e "\033[33mAP_num con't be great of total number for ap list!!\033[0m"
-		read -p "Select one AP what you want to handshake [num]: " ap_num
+		echo -e "\033[33mAP_num Die Gesamtzahl für die AP-Liste ist nicht sehr hoch!!\033[0m"
+		read -p "Wählen Sie einen AP, den Sie schütteln möchten [num]: " ap_num
 	elif [ ${ap_num} -eq 0 ]; then
 		clear
 		display_result_info
-		echo -e "\033[33mAP_num is must be great of 0!!\033[0m"
-		read -p "Select one AP what you want to handshake [num]: " ap_num
+		echo -e "\033[33mAP_num ist viel groesser wie 0!!\033[0m"
+		read -p "Wählen Sie einen AP, den Sie schütteln möchten [num]: " ap_num
 	else
 		break
 	fi
@@ -266,7 +266,7 @@ done
 #ding yi mu biao  AP mac and xin dao
 target_mac=$(cat ${work_dir}/server_list.csv|egrep --text -v "SSID,"|egrep --text -v "^$"|awk -F "," "NR==${ap_num}"'{print $1}')
 if [ -z ${target_mac} ] || [ "${target_mac}" == "" ]; then
-	echo -e "\033[31mThe target ap mac is null ,now program is exit.\033[0m"
+	echo -e "\033[31mDas Ziel ap mac ist null, das Programm wird jetzt beendet.\033[0m"
 	exit 8
 fi
 target_ap_name=$(cat ${work_dir}/server_list.csv|grep --text "${target_mac}"|awk -F "," '{if (NF>1) {print $(NF-1)}}'|awk '{print $1}')
@@ -274,7 +274,7 @@ cur_channel=$(cat ${work_dir}/server_list.csv|grep --text "${target_mac}"|awk '{
 
 #kai qi  zhua  bao  xterm
 if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
-	echo -e "\033[35mThe handshake program xterm have started.\033[0m"
+	echo -e "\033[35mDas Handshake-Programm xterm wurde gestartet.\033[0m"
 	sleep 1
 	for i in 1
 	do
@@ -286,7 +286,7 @@ if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
 		sleep 2
 	done
 else
-	echo -e "\033[35mThe handshake program xterm have started.\033[0m"
+	echo -e "\033[35mDas Handshake-Programm xterm wurde gestartet.\033[0m"
 	sleep 1
 	for i in 1
 	do
@@ -307,11 +307,11 @@ echo $! >${work_dir}/mdk.pid
 
 #shu chu cao zuo ti shi info
 echo -e "\n"
-echo -e "\033[33m提示：当目标WiFi握手包出现了，请手动关掉抓包窗口进入下一步！\033[0m"
+echo -e "\033[33mTipp: Wenn das Ziel-WiFi-Handshake-Paket erscheint, schließen Sie das Paketaufnahmefenster manuell, um zum nächsten Schritt zu gelangen! \033[0m"
 
 #guan bi gon ji xterm
 sleep 15
-echo -e "\033[32mClose the mdk attack xterm...\033[0m"
+echo -e "\033[32mSchliesse mdk Angriff xterm...\033[0m"
 cat ${work_dir}/mdk.pid|xargs -i kill {} >/dev/null 2>&1
 target_pid=$(cat ${work_dir}/mdk.pid)
 pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)     
@@ -335,7 +335,7 @@ do
 	target_pid=$(cat ${work_dir}/airodump-ng.pid)
 	pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
 	ppid_sum=$(ps -ef|awk "NR>1"'{print $3}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
-	echo -n "Now ${i} seconds has passd.."
+	echo -n "Jetzt sind ${i} Sekunden vergangen.."
 	echo -ne "\r\r"
 	sleep 1
 	let i+=1
@@ -348,27 +348,27 @@ sleep 2
 #===========================================================================================================================================
 handshake_check() {
 if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
-	echo -e "\033[35mChecking handshake \033[34m[${result_dir}/${target_mac//:/-}-01.cap]\033[0m \033[35m....\033[0m"
+	echo -e "\033[35mPrüfe handshake \033[34m[${result_dir}/${target_mac//:/-}-01.cap]\033[0m \033[35m....\033[0m"
 	sleep 3
 	cowpatty -c -r ${result_dir}/${target_mac//:/-}-01.cap >/dev/null 2>&1
 	exit_code=$?
 	if [ ${exit_code} -eq 0 ]; then
-		echo -e "\033[32mThe target handshake \033[34m[${result_dir}/${target_mac//:/-}-01.cap]\033[0m \033[32mcheck sucessfully \033[0m"
+		echo -e "\033[32mZiel handshake \033[34m[${result_dir}/${target_mac//:/-}-01.cap]\033[0m \033[32merfolgreich geprueft \033[0m"
 		return 0
 	else
-		echo -e "\033[31mThe target handshake \033[34m[${result_dir}/${target_mac//:/-}-01.cap]\033[0m \033[31mcheck faild \033[0m"
+		echo -e "\033[31mZiel handshake \033[34m[${result_dir}/${target_mac//:/-}-01.cap]\033[0m \033[31mPruefung fehlgeschlagen \033[0m"
 		return 1
 	fi
 else
-	echo -e "\033[35mChecking handshake \033[34m[${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap]\033[0m \033[35m....\033[0m"
+	echo -e "\033[35mPruefe handshake \033[34m[${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap]\033[0m \033[35m....\033[0m"
 	sleep 3
 	cowpatty -c -r ${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap >/dev/null 2>&1
 	exit_code=$?
 	if [ ${exit_code} -eq 0 ]; then
-		echo -e "\033[32mThe target handshake \033[34m[${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap]\033[0m \033[32mcheck sucessfully \033[0m"
+		echo -e "\033[32mZiel handshake \033[34m[${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap]\033[0m \033[32merfolgreich geprueft \033[0m"
 		return 0
 	else
-		echo -e "\033[31mThe target handshake \033[34m[${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap]\033[0m \033[31mcheck faild \033[0m"
+		echo -e "\033[31mZiel handshake \033[34m[${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap]\033[0m \033[31mPruefung fehlgeschlagen \033[0m"
 		return 1
 	fi
 fi
@@ -379,10 +379,10 @@ fi
 #===========================================================================================================================================
 display_cap_location() {
 if [ -z ${target_ap_name} ] || [ "${target_ap_name}" == "" ]; then
-	echo -e "\033[36mThe handshake cap is saved in [${result_dir}/${target_mac//:/-}-01.cap] \033[0m"
+	echo -e "\033[36mDer handshake cap wurde gespeichert in [${result_dir}/${target_mac//:/-}-01.cap] \033[0m"
 	exit 0
 else
-	echo -e "\033[36mThe handshake cap is saved in [${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap] \033[0m"
+	echo -e "\033[36mDer handshake cap wurde gespeichert in [${result_dir}/${target_ap_name}-${target_mac//:/-}-01.cap] \033[0m"
 	exit 0
 fi
 }
@@ -391,14 +391,14 @@ fi
 #===============================                               xuan zhe gon ji mode                       ==================================
 #===========================================================================================================================================
 handshake_menu() {
-echo -e "\033[33mSelect one type what you want to handshake\033[0m"
+echo -e "\033[33mWaehlen Sie das Band aus fuer den handshake\033[0m"
 echo -e "\033[36m************************************\033[0m"
 echo -e "\033[31m0.        return tool select\033[0m       \033[36m*\033[0m"
 echo -e "\033[36m************************************\033[0m"
 echo -e "\033[32m1.        2.4G\033[0m                     \033[36m*\033[0m"
 echo -e "\033[32m2.        5G\033[0m                       \033[36m*\033[0m"
 echo -e "\033[36m************************************\033[0m"
-read -p "Please select: " hand_type
+read -p "Bitte auswaehlen: " hand_type
 case ${hand_type} in
 	0)
 		clear
@@ -412,7 +412,7 @@ case ${hand_type} in
 		exit_code=$?
 		while [ ${exit_code} -ne 0 ]
 		do
-			echo -e "\033[35mRestart handshake program and rechecking....\033[0m"
+			echo -e "\033[35mStarten Sie das Handshake-Programm neu und überprüfen Sie es erneut....\033[0m"
 			sleep 3
 			handshake_bga mdk3 bg
 			handshake_check
@@ -428,7 +428,7 @@ case ${hand_type} in
 		exit_code=$?
 		while [ ${exit_code} -ne 0 ]
 		do
-			echo -e "\033[35Restart handshake program and rechecking....\033[0m"
+			echo -e "\033[35Starten Sie das Handshake-Programm neu und überprüfen Sie es erneut....\033[0m"
 			sleep 3
 			handshake_bga mdk4 a
 			handshake_check
