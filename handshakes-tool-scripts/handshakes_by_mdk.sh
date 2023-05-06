@@ -139,7 +139,7 @@ for i in 1
 do
 	rm -rf ${work_dir}/dump*
 	sleep 2
-	xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Alle AP scannen" -e airodump-ng ${wlan_card} --band $1 -w ${work_dir}/dump &
+	xterm -geometry "107-0+0" -bg "#000000" -fg "#FFFFFF" -title "Alle AP scannen" -e airodump-ng ${wlan_card} -t WPA -t WPA2 --band $1 -w ${work_dir}/dump &
 	echo $! >${work_dir}/airodump-ng.pid
 	target_pid=$(cat ${work_dir}/airodump-ng.pid)
         pid_sum=$(ps -ef|awk "NR>1"'{print $2}'|egrep "^${target_pid}$"|grep -v "grep"|wc -l)
